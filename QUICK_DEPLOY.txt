@@ -1,0 +1,64 @@
+================================================================================
+QUICK DEPLOYMENT COMMANDS
+Virtual Phone System - Copy & Paste Ready
+================================================================================
+
+REPLACE: YOUR_SERVER_IP with your actual Contabo VPS IP address
+REPLACE: /path/to/project with your actual project path
+
+================================================================================
+STEP 1: UPLOAD FILES (Run from Windows PowerShell)
+================================================================================
+
+cd "C:\Users\munna\Downloads\New folder (12)"
+scp -r * root@YOUR_SERVER_IP:/root/virtual-phone-system/
+
+================================================================================
+STEP 2: CONNECT TO SERVER (Run from Windows PowerShell)
+================================================================================
+
+ssh root@YOUR_SERVER_IP
+
+================================================================================
+STEP 3: DEPLOY (Run on Linux Server after SSH connection)
+================================================================================
+
+cd /root/virtual-phone-system
+chmod +x deploy.sh setup/*.sh scripts/*.sh
+./deploy.sh
+
+================================================================================
+STEP 4: VERIFY (Run on Linux Server)
+================================================================================
+
+systemctl status asterisk
+asterisk -rx "core show version"
+grep "secret=" /etc/asterisk/sip.conf | head -3
+
+================================================================================
+ONE-LINER (All steps combined - run on server after upload)
+================================================================================
+
+cd /root/virtual-phone-system && chmod +x deploy.sh setup/*.sh scripts/*.sh && ./deploy.sh --yes
+
+================================================================================
+GET SIP PASSWORDS (After deployment)
+================================================================================
+
+grep "secret=" /etc/asterisk/sip.conf | grep -v "^;"
+
+================================================================================
+VIEW LOGS (After deployment)
+================================================================================
+
+tail -f /var/log/asterisk/messages
+
+================================================================================
+RESTART ASTERISK (If needed)
+================================================================================
+
+systemctl restart asterisk
+asterisk -rx "core reload"
+
+================================================================================
+

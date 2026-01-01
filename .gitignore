@@ -1,0 +1,73 @@
+# Virtual Phone System - Git Ignore
+
+# Configuration files with sensitive data
+config/database.php
+*.env
+.env.local
+
+# Logs
+*.log
+/var/log/
+logs/
+
+# Database dumps
+*.sql
+*.dump
+
+# Temporary files
+*.tmp
+*.temp
+/tmp/
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Audio files (recordings)
+*.wav
+*.mp3
+*.ogg
+*.gsm
+/var/recordings/
+
+# Compiled files
+*.o
+*.so
+*.a
+
+# Asterisk runtime files
+/var/spool/asterisk/
+/var/lib/asterisk/
+/var/log/asterisk/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+
+# Node modules (if using Node.js)
+node_modules/
+npm-debug.log
+
+# Build directories
+build/
+dist/
+
