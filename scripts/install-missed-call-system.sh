@@ -35,6 +35,7 @@ if [ -f "/root/virtual-number/database/missed-call-schema.sql" ]; then
 else
     echo "⚠️  Database schema file not found, creating manually..."
     mysql -u root -pf1e23f6271a741c4 "$DB_NAME" << 'SQL'
+USE virtual_phone_system;
 CREATE TABLE IF NOT EXISTS missed_call_callbacks (
     callback_id INT AUTO_INCREMENT PRIMARY KEY,
     caller_number VARCHAR(50) NOT NULL COMMENT 'Phone number that gave missed call',
@@ -56,20 +57,62 @@ CREATE TABLE IF NOT EXISTS missed_call_callbacks (
     INDEX idx_call_id (call_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-ALTER TABLE calls 
-ADD COLUMN IF NOT EXISTS callback_type ENUM('manual', 'missed_call', 'scheduled') 
-    DEFAULT NULL COMMENT 'Type of callback';
+-- Add columns if they don't exist
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+    WHERE TABLE_SCHEMA = 'virtual_phone_system' 
+    AND TABLE_NAME = 'calls' 
+    AND COLUMN_NAME = 'callback_type');
+SET @sql = IF(@col_exists = 0, 
+    'ALTER TABLE calls ADD COLUMN callback_type ENUM(\'manual\', \'missed_call\', \'scheduled\') DEFAULT NULL COMMENT \'Type of callback\'', 
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
-ALTER TABLE calls 
-ADD COLUMN IF NOT EXISTS ivr_option_selected VARCHAR(10) DEFAULT NULL 
-    COMMENT 'IVR menu option selected by caller';
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+    WHERE TABLE_SCHEMA = 'virtual_phone_system' 
+    AND TABLE_NAME = 'calls' 
+    AND COLUMN_NAME = 'ivr_option_selected');
+SET @sql = IF(@col_exists = 0, 
+    'ALTER TABLE calls ADD COLUMN ivr_option_selected VARCHAR(10) DEFAULT NULL COMMENT \'IVR menu option selected by caller\'', 
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
-ALTER TABLE calls 
-ADD COLUMN IF NOT EXISTS early_media_sent TINYINT(1) DEFAULT 0 
-    COMMENT 'Whether early media (progress) was sent';
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+    WHERE TABLE_SCHEMA = 'virtual_phone_system' 
+    AND TABLE_NAME = 'calls' 
+    AND COLUMN_NAME = 'early_media_sent');
+SET @sql = IF(@col_exists = 0, 
+    'ALTER TABLE calls ADD COLUMN early_media_sent TINYINT(1) DEFAULT 0 COMMENT \'Whether early media (progress) was sent\'', 
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
-CREATE INDEX IF NOT EXISTS idx_callback_type ON calls(callback_type);
-CREATE INDEX IF NOT EXISTS idx_ivr_option ON calls(ivr_option_selected);
+-- Create indexes if they don't exist
+SET @idx_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS 
+    WHERE TABLE_SCHEMA = 'virtual_phone_system' 
+    AND TABLE_NAME = 'calls' 
+    AND INDEX_NAME = 'idx_callback_type');
+SET @sql = IF(@idx_exists = 0, 
+    'CREATE INDEX idx_callback_type ON calls(callback_type)', 
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+SET @idx_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS 
+    WHERE TABLE_SCHEMA = 'virtual_phone_system' 
+    AND TABLE_NAME = 'calls' 
+    AND INDEX_NAME = 'idx_ivr_option');
+SET @sql = IF(@idx_exists = 0, 
+    'CREATE INDEX idx_ivr_option ON calls(ivr_option_selected)', 
+    'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 SQL
     echo "✅ Database schema created manually"
 fi
