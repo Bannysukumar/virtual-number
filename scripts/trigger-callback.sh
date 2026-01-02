@@ -22,8 +22,13 @@ echo "Triggering callback to: $NORMALIZED_NUMBER"
 # 1. Extension 's' expects CALLER_NUM variable
 # 2. Extension _X. uses the number directly as extension
 
-# Use the phone number as extension (matches _X. pattern in dialplan)
-asterisk -rx "channel originate Local/${NORMALIZED_NUMBER}@${CONTEXT} application Wait 1" > /dev/null 2>&1
+# Method 1: Use phone number as extension (matches _X. pattern)
+# Format: channel originate <tech>/<dest> <type> <type_data> [<timeout>] [<options>]
+asterisk -rx "channel originate Local/${NORMALIZED_NUMBER}@${CONTEXT} extension ${NORMALIZED_NUMBER}@${CONTEXT}" > /dev/null 2>&1
+
+# Method 2: If above doesn't work, try using extension 's' with Set() in dialplan
+# We'll modify the dialplan to set CALLER_NUM from the extension
+# For now, the _X. pattern should work
 
 # Alternative: Use extension 's' with variables (if above doesn't work)
 # Note: Asterisk CLI doesn't support setting variables directly in originate
