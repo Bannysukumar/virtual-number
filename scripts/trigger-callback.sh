@@ -17,17 +17,29 @@ NORMALIZED_NUMBER=$(echo "$PHONE_NUMBER" | sed 's/^+//')
 
 echo "Triggering callback to: $NORMALIZED_NUMBER"
 
-# Method 1: Use Asterisk CLI originate command with channel variables
-# Pass phone number as extension or via channel variables
-# Format: channel originate Local/EXTEN@context application appname appdata variable=value
+# Method 1: Use Asterisk CLI originate command
+# The dialplan has two options:
+# 1. Extension 's' expects CALLER_NUM variable
+# 2. Extension _X. uses the number directly as extension
 
-# Option A: Use phone number as extension (simpler)
+# Use the phone number as extension (matches _X. pattern in dialplan)
 asterisk -rx "channel originate Local/${NORMALIZED_NUMBER}@${CONTEXT} application Wait 1" > /dev/null 2>&1
 
-# Option B: Use extension 's' with channel variables (if Option A doesn't work)
-# asterisk -rx "channel originate Local/${EXTENSION}@${CONTEXT} application Wait 1" \
-#   --variable="CALLER_NUM=${NORMALIZED_NUMBER}" \
-#   --variable="CALLBACK_ID=${CALLBACK_ID}" > /dev/null 2>&1
+# Alternative: Use extension 's' with variables (if above doesn't work)
+# Note: Asterisk CLI doesn't support setting variables directly in originate
+# We need to use AMI or set variables in the dialplan
+
+# Alternative: Use AMI (Asterisk Manager Interface) if configured
+# This requires AMI authentication - uncomment if AMI is set up
+# echo "Action: Originate
+# Channel: Local/${EXTENSION}@${CONTEXT}
+# Context: ${CONTEXT}
+# Exten: s
+# Priority: 1
+# Variable: CALLER_NUM=${NORMALIZED_NUMBER}
+# Variable: CALLBACK_ID=${CALLBACK_ID}
+# CallerID: ${NORMALIZED_NUMBER}
+# " | nc localhost 5038
 
 # Alternative: Use AMI (Asterisk Manager Interface) if configured
 # This requires AMI authentication - uncomment if AMI is set up
